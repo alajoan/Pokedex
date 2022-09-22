@@ -8,7 +8,6 @@
 import Foundation
 
 public struct BaseUrl {
-    public static var apiKey: String = "
     public static var baseURL: String = "https://pokeapi.co/api/v2/"
 }
 

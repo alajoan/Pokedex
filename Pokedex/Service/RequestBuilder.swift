@@ -13,27 +13,29 @@ final public class RequestBuilder {
     private init() {}
     
     public func buildUrlRequest(method: Method,
-                                endpoint: String,
+                                path: String,
+                                endpoint: String = "",
                                 parameters: [String: Any]
                                 ) -> URLRequest?
     {
         let urlComponents = NSURLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = BaseUrl.baseURL
-        urlComponents.path = endpoint
+        urlComponents.path = endpoint.isEmpty ? path : "\(path)/\(endpoint)"
         
         var queryItem: [URLQueryItem] = []
         let queryParameters = parameters.map({URLQueryItem(name: $0.key, value: $0.value as? String)})
         queryItem.append(contentsOf: queryParameters)
         
-        guard let completeUrl = urlComponents.url else { return nil }
-        
-        let URLRequest = URLRequest(url: completeUrl, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 30)
+        guard let urlComplete = urlComponents.url else { return nil }
+                
+        let URLRequest = URLRequest(url: urlComplete, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 30)
         
         return URLRequest
     }
     
     public func request(method: Method,
+                        path: String,
                         endpoint: String,
                         parameters: [String: Any],
                         success: @escaping (Data) -> Void,
@@ -44,6 +46,7 @@ final public class RequestBuilder {
     {
         guard let URLRequest = buildUrlRequest(
             method: method,
+            path: path,
             endpoint: endpoint,
             parameters: parameters
         ) else { return }
@@ -59,7 +62,7 @@ final public class RequestBuilder {
                 case 400...499:
                         failure("Client error", "Client Error", "", error)
                     return
-                case 500...99:
+                case 500...599:
                         failure("Page not found", "Page not found", "", error)
                     return
                     default:
